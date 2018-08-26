@@ -33,3 +33,10 @@ c). By using combineByKey function on RDDS -- No need of formatting order_date o
 8. Create a mysql table named result and load data from /user/cloudera/problem1/result4a-csv to mysql table named result 
 
 __My solution__
+
+1.
+
+```console
+cloudera@quickstart:~$ sqoop import --table orders --connect jdbc:mysql://quickstart:3306/retail_db --username=retail_dba --password=cloudera --compression-codec=snappy --as-avrodatafile --warehouse-dir=/user/cloudera/problem1
+
+```
