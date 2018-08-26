@@ -32,11 +32,38 @@ c). By using combineByKey function on RDDS -- No need of formatting order_date o
 
 8. Create a mysql table named result and load data from /user/cloudera/problem1/result4a-csv to mysql table named result 
 
-__My solution__
+__My solution with Spark 1.6 and Scala__
 
 1.
 
 ```console
-cloudera@quickstart:~$ sqoop import --table orders --connect jdbc:mysql://quickstart:3306/retail_db --username=retail_dba --password=cloudera --compression-codec=snappy --as-avrodatafile --warehouse-dir=/user/cloudera/problem1
+cloudera@quickstart:~$ sqoop import --table orders --connect jdbc:mysql://quickstart:3306/retail_db \
+--username=retail_dba --password=cloudera --compression-codec=snappy --as-avrodatafile \
+--warehouse-dir=/user/cloudera/problem1
+```
+
+2.
+
+```console
+cloudera@quickstart:~$ sqoop import --table order_items --connect jdbc:mysql://quickstart:3306/retail_db \
+--username=retail_dba --password=cloudera --compression-codec=snappy --as-avrodatafile \
+--warehouse-dir=/user/cloudera/problem1
+```
+
+3.
+
+```console
+cloudera@quickstart:~$ spark-shell --master yarn-client --packages com.databricks:spark-avro_2.11:2.0.1
+```
+
+```scala
+import com.databricks.spark.avro._
+
+val df_orders = sqlContext.read.avro("/user/cloudera/problem1/orders")
+val df_order_items = sqlContext.read.avro("/user/cloudera/problem1/order_items")
+
 
 ```
+
+
+
