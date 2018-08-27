@@ -68,11 +68,14 @@ val df_order_items = sqlContext.read.avro("/user/cloudera/problem1/order_items")
 ```
 
 4. 
+
+a).
 ```scala
 val df_join = df_orders.join(df_order_items,$"order_id" === $"order_item_order_id","inner")
 val df_result = df_join.select(to_date(from_unixtime($"order_date"/1000)).alias("order_date"),$"order_status", $"order_item_subtotal".alias("total_amount"),$"order_id").groupBy($"order_date",$"order_status").agg(sum($"total_amount").alias("total_amount"), countDistinct($"order_id").alias("total_order")).orderBy($"order_date".desc, $"order_status".asc, $"total_amount".desc,$"total_order".asc)
 
 ```
+
 
 
 
