@@ -73,7 +73,6 @@ a).
 ```scala
 val df_join = df_orders.join(df_order_items,$"order_id" === $"order_item_order_id","inner")
 val df_result = df_join.select(to_date(from_unixtime($"order_date"/1000)).alias("order_date"),$"order_status", $"order_item_subtotal".alias("total_amount"),$"order_id").groupBy($"order_date",$"order_status").agg(sum($"total_amount").alias("total_amount"), countDistinct($"order_id").alias("total_order")).orderBy($"order_date".desc, $"order_status".asc, $"total_amount".desc,$"total_order".asc)
-<<<<<<< HEAD
 
 ```
 
@@ -150,43 +149,9 @@ only showing top 20 rows
 
 ```scala 
 ```
-=======
->>>>>>> be44c8e80ada9e979a5b2e6b14a02babc733d1b1
 
 ```scala 
 ```
-
-If we execute the ```scala df_join.show command```, then the result is:
-
-```scala 
-+----------+---------------+------------------+-----------+                     
-|order_date|   order_status|      total_amount|total_order|
-+----------+---------------+------------------+-----------+
-|2014-07-24|       CANCELED|1254.9200382232666|          2|
-|2014-07-24|         CLOSED|16333.160339355469|         26|
-|2014-07-24|       COMPLETE| 34552.03063583374|         55|
-|2014-07-24|        ON_HOLD|1709.7400207519531|          4|
-|2014-07-24| PAYMENT_REVIEW|499.95001220703125|          1|
-|2014-07-24|        PENDING|12729.490217208862|         22|
-|2014-07-24|PENDING_PAYMENT|17680.700359344482|         34|
-|2014-07-24|     PROCESSING| 9964.740190505981|         17|
-|2014-07-24|SUSPECTED_FRAUD|2351.6100215911865|          4|
-|2014-07-23|       CANCELED| 5777.330112457275|         10|
-|2014-07-23|         CLOSED|  13312.7202835083|         18|
-|2014-07-23|       COMPLETE|25482.510496139526|         40|
-|2014-07-23|        ON_HOLD| 4514.460060119629|          6|
-|2014-07-23| PAYMENT_REVIEW|1699.8200302124023|          2|
-|2014-07-23|        PENDING|   6161.3701171875|         11|
-|2014-07-23|PENDING_PAYMENT|19279.810424804688|         30|
-|2014-07-23|     PROCESSING| 7962.790130615234|         15|
-|2014-07-23|SUSPECTED_FRAUD|3799.5700721740723|          6|
-|2014-07-22|       CANCELED| 3209.730094909668|          4|
-|2014-07-22|         CLOSED| 12688.79024887085|         20|
-+----------+---------------+------------------+-----------+
-only showing top 20 rows
-
-```
-
 
 
 
