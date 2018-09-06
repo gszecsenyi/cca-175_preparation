@@ -56,6 +56,7 @@ cloudera@quickstart:~$ sqoop import --table order_items --connect jdbc:mysql://q
 3.
 
 ```console
+cloudera@quickstart:~$ export JAVA_TOOL_OPTIONS="-Dhttps.protocols=TLSv1.2"
 cloudera@quickstart:~$ spark-shell --master yarn-client --packages com.databricks:spark-avro_2.11:2.0.1
 ```
 
@@ -76,7 +77,7 @@ val df_result = df_join.select(to_date(from_unixtime($"order_date"/1000)).alias(
 
 ```
 
-If we execute the ```scala df_join.show command```, then the result is:
+If we execute the ```scala df_join.show``` command, then the result is:
 
 ```scala 
 +----------+---------------+------------------+-----------+                     
