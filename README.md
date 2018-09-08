@@ -1,5 +1,5 @@
 # cca-175_preparation
-Problems and solutions to CCA-175 exam
+Tasks and solutions to CCA-175 exam
 
 The tasklist based on http://arun-teaches-u-tech.blogspot.com/p/certification-preparation-plan.html website, and its running on Cloudera Quickstart VM.
 
