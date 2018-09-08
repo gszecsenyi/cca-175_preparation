@@ -164,6 +164,7 @@ sqlContext.setConf("spark.sql.parquet.compression.codec","gzip")
 df_result2.write.parquet("/user/cloudera/problem1/result4b-gzip")
 ``` 
 c.)
+_TODO_
 ```scala
 
 ```
@@ -180,6 +181,7 @@ df_result2.write.parquet("/user/cloudera/problem1/result4b-snappy")
 ```
 
 c.)
+_TODO_
 ```scala
 
 ```
@@ -196,11 +198,19 @@ df_result2.rdd.saveAsTextFile("/user/cloudera/problem1/result4b-csv")
 ```
 
 c.)
+_TODO_
 ```scala
 
 ```
 
+8.)
+```console
 mysql -u retail_dba -p
+```
+```mysql
 use retail_db;
 create table result(order_date varchar(10),order_status varchar(40), order_amount float, order_count int);
+
+```
+
 
