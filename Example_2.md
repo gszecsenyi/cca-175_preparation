@@ -131,22 +131,62 @@ dfApi.show
 |         50|     60.0|           14|53.714285714285715|     34.0|
 +-----------+---------+-------------+------------------+---------+
 only showing top 20 rows
+```
+
+b.)
+
+```scala
+products_df.registerTempTable("products")
+val dfSQL = sqlContext.sql("select category_id, max(price) max_price, count(*) total_product, avg(price) avg_price, min(price) min_price from products where price < 100 group by category_id")
+
+dfSQL.show
++-----------+---------+-------------+------------------+---------+
+|category_id|max_price|total_product|         avg_price|min_price|
++-----------+---------+-------------+------------------+---------+
+|         31|    99.99|            7| 88.56142857142856|    79.99|
+|         32|    99.99|           10|             48.99|    19.99|
+|         33|    99.99|           19| 58.46157894736842|     10.8|
+|         34|    99.99|            9| 83.87888888888888|    34.99|
+|         35|    79.99|            9| 34.21222222222222|     9.99|
+|         36|    24.99|           24|19.198333333333338|    12.99|
+|         37|    51.99|           24| 36.40666666666667|     4.99|
+|         38|    99.95|           14|46.339285714285715|    19.99|
+|         39|    34.99|           12|23.740000000000006|    19.99|
+|         40|    24.99|           24|24.990000000000006|    24.99|
+|         41|    99.99|           37| 31.23648648648649|     9.59|
+|         42|      0.0|            1|               0.0|      0.0|
+|         43|     99.0|            1|              99.0|     99.0|
+|         44|    99.98|           15| 62.18933333333334|    21.99|
+|         45|    99.99|            7| 55.41857142857143|    27.99|
+|         46|    49.98|            9| 34.65111111111111|    19.98|
+|         47|    99.95|           14| 44.63071428571429|    21.99|
+|         48|    49.98|            7| 35.69714285714286|    19.98|
+|         49|    99.99|           13| 74.21692307692308|    19.98|
+|         50|     60.0|           14|53.714285714285715|     34.0|
++-----------+---------+-------------+------------------+---------+
+only showing top 20 rows
 
 
 ```
+c.)
+_TODO_
 
 
 5. 
 
-a).
+a.)
 ```scala
+sqlContext.setConf("spark.sql.parquet.compression.codec","snappy")
 dfApi.write.avro("/user/cloudera/problem2/products/result-df")
 ```
-b).
+b.)
 ```scala
-
+sqlContext.setConf("spark.sql.parquet.compression.codec","snappy")
+dfSQL.write.avro("/user/cloudera/problem2/products/result-sql")
 ```
-c).
+c.)
+
+_TODO_
 ```scala
 
 ```
