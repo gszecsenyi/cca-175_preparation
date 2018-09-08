@@ -205,7 +205,7 @@ _TODO_
 
 8.)
 ```console
-mysql -u retail_dba -p
+cloudera@quickstart:~$ mysql -u retail_dba -p
 ```
 ```mysql
 use retail_db;
