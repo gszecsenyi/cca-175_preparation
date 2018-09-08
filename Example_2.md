@@ -24,176 +24,129 @@ Filter such that your RDD\DF has products whose price is lesser than 100 USD
 - on the filtered data set also find out the minimum price of the product under each category
 
 5. Store the result in avro file using snappy compression under these folders respectively
-/user/cloudera/problem2/products/result-df
-/user/cloudera/problem2/products/result-sql
-/user/cloudera/problem2/products/result-rdd
+a.) /user/cloudera/problem2/products/result-df
+b.) /user/cloudera/problem2/products/result-sql
+c.) /user/cloudera/problem2/products/result-rdd
 
 __My solution with Spark 1.6 and Scala__
 
 1.
 
 ```console
-cloudera@quickstart:~$ sqoop import --table orders --connect jdbc:mysql://quickstart:3306/retail_db \
---username=retail_dba --password=cloudera --compression-codec=snappy --as-avrodatafile \
---warehouse-dir=/user/cloudera/problem1
+cloudera@quickstart:~$ sqoop import --table=products --connect jdbc:mysql://quickstart:3306/retail_db --username=retail_dba --password=cloudera --fields-terminated-by \| --lines-terminated-by \\n --warehouse-dir=/user/cloudera
 ```
 
 2.
 
 ```console
-cloudera@quickstart:~$ sqoop import --table order_items --connect jdbc:mysql://quickstart:3306/retail_db \
---username=retail_dba --password=cloudera --compression-codec=snappy --as-avrodatafile \
---warehouse-dir=/user/cloudera/problem1
+cloudera@quickstart ~$ hadoop fs -mkdir /user/cloudera/problem2
+cloudera@quickstart ~$ hadoop fs -mv /user/cloudera/products /user/cloudera/problem2
 ```
 
 3.
+
+```console
+[cloudera@quickstart ~]$ hadoop fs -chmod 765 /user/cloudera/problem2/products/*
+[cloudera@quickstart ~]$ hadoop fs -ls /user/cloudera/problem2/products
+Found 5 items
+-rwxrw-r-x   1 cloudera cloudera          0 2018-09-08 04:28 /user/cloudera/problem2/products/_SUCCESS
+-rwxrw-r-x   1 cloudera cloudera      41419 2018-09-08 04:28 /user/cloudera/problem2/products/part-m-00000
+-rwxrw-r-x   1 cloudera cloudera      43660 2018-09-08 04:28 /user/cloudera/problem2/products/part-m-00001
+-rwxrw-r-x   1 cloudera cloudera      42195 2018-09-08 04:28 /user/cloudera/problem2/products/part-m-00002
+-rwxrw-r-x   1 cloudera cloudera      46719 2018-09-08 04:28 /user/cloudera/problem2/products/part-m-00003
+
+```
+4.
 
 ```console
 cloudera@quickstart:~$ export JAVA_TOOL_OPTIONS="-Dhttps.protocols=TLSv1.2"
 cloudera@quickstart:~$ spark-shell --master yarn-client --packages com.databricks:spark-csv_2.11:1.5.0,com.databricks:spark-avro_2.11:2.0.1
 
 ```
+```scala
+
+case class Product(id: Int, category_id: Int, name: String, description:String, price: Double, image:String )
+val input = sc.textFile("/user/cloudera/problem2/products/")
+val cols = input.map(x => x.split('|'))
+val products_df = cols.map(p => Product(p(0).toInt,p(1).toInt,p(2),p(3),p(4).toDouble,p(5))).toDF
+
+products_df.show
+
++---+-----------+--------------------+-----------+------+--------------------+
+| id|category_id|                name|description| price|               image|
++---+-----------+--------------------+-----------+------+--------------------+
+|  1|          2|Quest Q64 10 FT. ...|           | 59.98|http://images.acm...|
+|  2|          2|Under Armour Men\'...|           |129.99|http://images.acm...|
+|  3|          2|Under Armour Men\'...|           | 89.99|http://images.acm...|
+|  4|          2|Under Armour Men\'...|           | 89.99|http://images.acm...|
+|  5|          2|Riddell Youth Rev...|           |199.99|http://images.acm...|
+|  6|          2|Jordan Men\'s VI R...|           |134.99|http://images.acm...|
+|  7|          2|Schutt Youth Recr...|           | 99.99|http://images.acm...|
+|  8|          2|Nike Men\'s Vapor ...|           |129.99|http://images.acm...|
+|  9|          2|Nike Adult Vapor ...|           |  50.0|http://images.acm...|
+| 10|          2|Under Armour Men\'...|           |129.99|http://images.acm...|
+| 11|          2|Fitness Gear 300 ...|           |209.99|http://images.acm...|
+| 12|          2|Under Armour Men\'...|           |139.99|http://images.acm...|
+| 13|          2|Under Armour Men\'...|           | 89.99|http://images.acm...|
+| 14|          2|Quik Shade Summit...|           |199.99|http://images.acm...|
+| 15|          2|Under Armour Kids...|           | 59.99|http://images.acm...|
+| 16|          2|Riddell Youth 360...|           |299.99|http://images.acm...|
+| 17|          2|Under Armour Men\'...|           |129.99|http://images.acm...|
+| 18|          2|Reebok Men\'s Full...|           | 29.97|http://images.acm...|
+| 19|          2|Nike Men\'s Finger...|           |124.99|http://images.acm...|
+| 20|          2|Under Armour Men\'...|           |129.99|http://images.acm...|
++---+-----------+--------------------+-----------+------+--------------------+
+only showing top 20 rows
+
+```
+a.)
 
 ```scala
-import com.databricks.spark.avro._
+val dfApi = products_df.filter($"price" < 100).groupBy($"category_id").agg(max($"price").alias("max_price"),count($"id").alias("total_product"),avg($"price").alias("avg_price"),min($"price").alias("min_price"))
 
-val df_orders = sqlContext.read.avro("/user/cloudera/problem1/orders")
-val df_order_items = sqlContext.read.avro("/user/cloudera/problem1/order_items")
+
+dfApi.show
++-----------+---------+-------------+------------------+---------+
+|category_id|max_price|total_product|         avg_price|min_price|
++-----------+---------+-------------+------------------+---------+
+|         31|    99.99|            7| 88.56142857142856|    79.99|
+|         32|    99.99|           10|             48.99|    19.99|
+|         33|    99.99|           19| 58.46157894736842|     10.8|
+|         34|    99.99|            9| 83.87888888888888|    34.99|
+|         35|    79.99|            9| 34.21222222222222|     9.99|
+|         36|    24.99|           24|19.198333333333338|    12.99|
+|         37|    51.99|           24| 36.40666666666667|     4.99|
+|         38|    99.95|           14|46.339285714285715|    19.99|
+|         39|    34.99|           12|23.740000000000006|    19.99|
+|         40|    24.99|           24|24.990000000000006|    24.99|
+|         41|    99.99|           37| 31.23648648648649|     9.59|
+|         42|      0.0|            1|               0.0|      0.0|
+|         43|     99.0|            1|              99.0|     99.0|
+|         44|    99.98|           15| 62.18933333333334|    21.99|
+|         45|    99.99|            7| 55.41857142857143|    27.99|
+|         46|    49.98|            9| 34.65111111111111|    19.98|
+|         47|    99.95|           14| 44.63071428571429|    21.99|
+|         48|    49.98|            7| 35.69714285714286|    19.98|
+|         49|    99.99|           13| 74.21692307692308|    19.98|
+|         50|     60.0|           14|53.714285714285715|     34.0|
++-----------+---------+-------------+------------------+---------+
+only showing top 20 rows
+
 
 ```
 
-4. 
+
+5. 
 
 a).
 ```scala
-val df_join = df_orders.join(df_order_items,$"order_id" === $"order_item_order_id","inner")
-val df_result = df_join.select(to_date(from_unixtime($"order_date"/1000)).alias("order_date"),$"order_status", $"order_item_subtotal".alias("total_amount"),$"order_id").groupBy($"order_date",$"order_status").agg(sum($"total_amount").alias("total_amount"), countDistinct($"order_id").alias("total_order")).orderBy($"order_date".desc, $"order_status".asc, $"total_amount".desc,$"total_order".asc)
-
+dfApi.write.avro("/user/cloudera/problem2/products/result-df")
 ```
-
-If we execute the ```scala 
-df_join.show``` command, then the result is:
-
-```scala 
-+----------+---------------+------------------+-----------+                     
-|order_date|   order_status|      total_amount|total_order|
-+----------+---------------+------------------+-----------+
-|2014-07-24|       CANCELED|1254.9200382232666|          2|
-|2014-07-24|         CLOSED|16333.160339355469|         26|
-|2014-07-24|       COMPLETE| 34552.03063583374|         55|
-|2014-07-24|        ON_HOLD|1709.7400207519531|          4|
-|2014-07-24| PAYMENT_REVIEW|499.95001220703125|          1|
-|2014-07-24|        PENDING|12729.490217208862|         22|
-|2014-07-24|PENDING_PAYMENT|17680.700359344482|         34|
-|2014-07-24|     PROCESSING| 9964.740190505981|         17|
-|2014-07-24|SUSPECTED_FRAUD|2351.6100215911865|          4|
-|2014-07-23|       CANCELED| 5777.330112457275|         10|
-|2014-07-23|         CLOSED|  13312.7202835083|         18|
-|2014-07-23|       COMPLETE|25482.510496139526|         40|
-|2014-07-23|        ON_HOLD| 4514.460060119629|          6|
-|2014-07-23| PAYMENT_REVIEW|1699.8200302124023|          2|
-|2014-07-23|        PENDING|   6161.3701171875|         11|
-|2014-07-23|PENDING_PAYMENT|19279.810424804688|         30|
-|2014-07-23|     PROCESSING| 7962.790130615234|         15|
-|2014-07-23|SUSPECTED_FRAUD|3799.5700721740723|          6|
-|2014-07-22|       CANCELED| 3209.730094909668|          4|
-|2014-07-22|         CLOSED| 12688.79024887085|         20|
-+----------+---------------+------------------+-----------+
-only showing top 20 rows
-
-```
-
-b.)
-Register temp table into Spark SQL Context
-```scala 
-df_join.registerTempTable("item_orders_table")
-```
-Execute query
-```scala 
-val df_result2 = sqlContext.sql("select to_date(from_unixtime(order_date/1000)) as order_date, order_status , sum(order_item_subtotal) as total_amount,count(distinct order_id) total_order from item_orders_table group by order_date, order_status order by order_date desc, order_status asc, total_amount asc, total_order desc")
-```
-
-```scala 
-df_result2.show
-+----------+---------------+------------------+-----------+                     
-|order_date|   order_status|      total_amount|total_order|
-+----------+---------------+------------------+-----------+
-|2014-07-24|       CANCELED|1254.9200382232666|          2|
-|2014-07-24|         CLOSED|16333.160339355469|         26|
-|2014-07-24|       COMPLETE| 34552.03063583374|         55|
-|2014-07-24|        ON_HOLD|1709.7400207519531|          4|
-|2014-07-24| PAYMENT_REVIEW|499.95001220703125|          1|
-|2014-07-24|        PENDING|12729.490217208862|         22|
-|2014-07-24|PENDING_PAYMENT|17680.700359344482|         34|
-|2014-07-24|     PROCESSING| 9964.740190505981|         17|
-|2014-07-24|SUSPECTED_FRAUD|2351.6100215911865|          4|
-|2014-07-23|       CANCELED| 5777.330112457275|         10|
-|2014-07-23|         CLOSED|  13312.7202835083|         18|
-|2014-07-23|       COMPLETE|25482.510496139526|         40|
-|2014-07-23|        ON_HOLD| 4514.460060119629|          6|
-|2014-07-23| PAYMENT_REVIEW|1699.8200302124023|          2|
-|2014-07-23|        PENDING|   6161.3701171875|         11|
-|2014-07-23|PENDING_PAYMENT|19279.810424804688|         30|
-|2014-07-23|     PROCESSING| 7962.790130615234|         15|
-|2014-07-23|SUSPECTED_FRAUD|3799.5700721740723|          6|
-|2014-07-22|       CANCELED| 3209.730094909668|          4|
-|2014-07-22|         CLOSED| 12688.79024887085|         20|
-+----------+---------------+------------------+-----------+
-only showing top 20 rows
-```
-c.)
-
-5.
-
-a.)
-```scala 
-sqlContext.setConf("spark.sql.parquet.compression.codec","gzip")
-df_result.write.parquet("/user/cloudera/problem1/result4a-gzip")
-``` 
-
-b.)
-```scala 
-sqlContext.setConf("spark.sql.parquet.compression.codec","gzip")
-df_result2.write.parquet("/user/cloudera/problem1/result4b-gzip")
-``` 
-c.)
+b).
 ```scala
 
 ```
-6.
-a.)
-```scala
-sqlContext.setConf("spark.sql.parquet.compression.codec","snappy")
-df_result.write.parquet("/user/cloudera/problem1/result4a-snappy")
-```
-
-b.)
-```scala
-df_result2.write.parquet("/user/cloudera/problem1/result4b-snappy")
-```
-
-c.)
+c).
 ```scala
 
 ```
-
-7.
-a.)
-```scala
-df_result.rdd.saveAsTextFile("/user/cloudera/problem1/result4a-csv")
-```
-
-b.)
-```scala
-df_result2.rdd.saveAsTextFile("/user/cloudera/problem1/result4b-csv")
-```
-
-c.)
-```scala
-
-```
-
-mysql -u retail_dba -p
-use retail_db;
-create table result(order_date varchar(10),order_status varchar(40), order_amount float, order_count int);
-
