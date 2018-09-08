@@ -212,5 +212,5 @@ use retail_db;
 create table result(order_date varchar(10),order_status varchar(40), order_amount float, order_count int);
 
 ```
-
+_TODO_
 
