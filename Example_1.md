@@ -78,8 +78,10 @@ val df_result = df_join.select(to_date(from_unixtime($"order_date"/1000)).alias(
 
 ```
 
-If we execute the ```scala 
-df_join.show``` command, then the result is:
+If we execute the 
+```scala 
+df_result.show
+``` command, then the result is:
 
 ```scala 
 +----------+---------------+------------------+-----------+                     
