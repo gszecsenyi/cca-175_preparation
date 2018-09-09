@@ -169,24 +169,33 @@ only showing top 20 rows
 
 ```
 c.)
-_TODO_
 
-
+```scala
+val dfRDD = products_df.filter($"price" < 100).map(x => (x(1).toString.toInt,x(4).toString.toDouble)).aggregateByKey((0.0,99999999999999.0,0,0.0))((v1,v2) => (math.max(v1._1,v2),math.min(v1._2,v2),v1._3+1,v1._4+v2),(p1,p2) => (math.max(p1._1,p2._1),math.min(p1._2,p2._2),(p1._3 +p2._3),p1._4+p2._4)).map(x => (x._1,x._2._1,x._2._2,x._2._3,x._2._4/x._2._3)).sortBy(_._1,true).toDF
+```
 5. 
 
 a.)
+
 ```scala
+import com.databricks.spark.avro._;
+
 sqlContext.setConf("spark.sql.parquet.compression.codec","snappy")
 dfApi.write.avro("/user/cloudera/problem2/products/result-df")
 ```
+
 b.)
 ```scala
+import com.databricks.spark.avro._;
+
 sqlContext.setConf("spark.sql.parquet.compression.codec","snappy")
 dfSQL.write.avro("/user/cloudera/problem2/products/result-sql")
 ```
+
 c.)
-
-_TODO_
 ```scala
+import com.databricks.spark.avro._;
 
+sqlContext.setConf("spark.sql.parquet.compression.codec","snappy")
+dfRDD.write.avro("/user/cloudera/problem2/products/result-rdd")
 ```
