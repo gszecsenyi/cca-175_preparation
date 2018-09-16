@@ -15,12 +15,7 @@ __Original Description__
 4. Now create a table named retail.orders_avro in hive stored as avro, the table should have same table definition as order_sqoop. Additionally, this new table should be partitioned by the order month i.e -> year-order_month.(example: 2014-01)
 Load data into orders_avro table from orders_sqoop table.
 
-5. Write query in hive that shows all orders belonging to a certain day. This day is when the most orders were placed. select data from orders_avro
-evolve the avro schema related to orders_sqoop table by adding more fields named (order_style String, order_zone Integer)
-insert two more records into orders_sqoop table. 
-
-6. Write query in hive that shows all orders belonging to a certain day. This day is when the most orders were placed. select data from orders_sqoop
-query table in impala that shows all orders belonging to a certain day. This day is when the most orders were placed. select data from orders_sqoop
+5. Add to columns to the orders_sqoop table, with the following attributes (order_zone int, order_style string)
 
 __My solution with Spark 1.6 and Scala__
 
@@ -57,12 +52,12 @@ TBLPROPERTIES (
 
 3.
 
-```console
+```hive
 select * from orders_sqoop y where y.order_date in (select z.order_date from (select x.order_date, count(1) from orders_sqoop x group by x.order_date order by 2 desc limit 1) z);
 ```
 4.
 Exit from hive with exit command, and open impala with impala command. Then execute the following commands:
-```console
+```impala
 invalidate metadata;
 select * from orders_sqoop y where y.order_date in (select z.order_date from (select x.order_date, count(1) from orders_sqoop x group by x.order_date order by 2 desc limit 1) z);
 ```
@@ -71,29 +66,82 @@ Now open again hive with hive command and execute the following commands:
 create table orders_avro (
 order_id int,
 order_date bigint,
-order_customer_id int,
+order_customer_id int, 
 order_status string)
-PARTITIONED BY (order_yearmonth string)
-STORED AS AVRO
-;
-```
-
-```scala
-
-```
-
-```scala
-
-```
-
-```scala
-
-```
-
-```scala
-
+partitioned by (order_month string)
+stored as avro;
 ```
 
 ```hive
+insert overwrite table orders_avro partition (order_month)
+select order_id, order_date, order_customer_id, order_status, substr(from_unixtime(cast(order_date/1000 as int)),1,7) as order_month from orders_sqoop;
+```
+5.
+Add the following entry to the orders_sqoop.avsc and upload (overwrite) it:
+```hive
+, {
+    "name" : "order_zone",
+    "type" : [ "null", "int" ],
+    "default" : null,
+    "columnName" : "order_zone",
+    "sqlType" : "4"
+  }, {
+    "name" : "order_style",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "order_style",
+    "sqlType" : "12"
+  }
+```
 
+so the full file content is:
+```hive
+{
+  "type" : "record",
+  "name" : "orders",
+  "doc" : "Sqoop import of orders",
+  "fields" : [ {
+    "name" : "order_id",
+    "type" : [ "null", "int" ],
+    "default" : null,
+    "columnName" : "order_id",
+    "sqlType" : "4"
+  }, {
+    "name" : "order_date",
+    "type" : [ "null", "long" ],
+    "default" : null,
+    "columnName" : "order_date",
+    "sqlType" : "93"
+  }, {
+    "name" : "order_customer_id",
+    "type" : [ "null", "int" ],
+    "default" : null,
+    "columnName" : "order_customer_id",
+    "sqlType" : "4"
+  }, {
+    "name" : "order_status",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "order_status",
+    "sqlType" : "12"
+  }, {
+    "name" : "order_zone",
+    "type" : [ "null", "int" ],
+    "default" : null,
+    "columnName" : "order_zone",
+    "sqlType" : "4"
+  }, {
+    "name" : "order_style",
+    "type" : [ "null", "string" ],
+    "default" : null,
+    "columnName" : "order_style",
+    "sqlType" : "12"
+  } ],
+  "tableName" : "orders"
+}
+```
+
+Open hive, and check for the table description:
+```hive
+desc orders_sqoop;
 ```
