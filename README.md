@@ -9,4 +9,7 @@ Ingest data from MySQL into HDFS, aggregate it, save it, and export back the res
 [2. Tasklist](https://github.com/gszecsenyi/cca-175_preparation/blob/master/Example_2.md)
 Ingest data from MySQL into HDFS, aggregate it, save it.
 
+[3. Tasklist](https://github.com/gszecsenyi/cca-175_preparation/blob/master/Example_3.md)
+Ingest data from MySQL into HDFS as Avro, aggregate data and extend avro schema with additional columns. 
+
 
