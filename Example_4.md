@@ -45,8 +45,9 @@ __My solution with Spark 1.6 and Scala__
 4.
 Open Spark-shell and execute the following command
 ```scala
-val avro_df = sqlContext.read.avro("/user/cloudera/problem4/avro/orders")
-```
+import com.databricks.spark.avro._ 
+
+val avro_df = sqlContext.read.avro("/user/cloudera/problem5/avro/orders")
 
 a.)
 ```scala
